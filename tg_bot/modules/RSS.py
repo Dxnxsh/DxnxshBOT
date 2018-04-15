@@ -9,8 +9,8 @@ from os import path
 from telegram.ext import CommandHandler
 from telegram.error import BadRequest
 import feedparser
-import Nadeko.NadekoAPI.plugins
-from Nadeko.NadekoAPI.snippets import stripln
+import tg_bot.plugins
+from tg_bot.snippets import stripln
 
 datadir = "data"
 log = logging.getLogger(__name__)
@@ -21,9 +21,9 @@ valid_tags = re.compile(r'(<(/?)(b|i|pre|code|a href="[^"]+")>)')
 invalid_tags = re.compile(r'(?<!\\)[<][^>]*(?<!\\)[>]')
 paragraphy = re.compile('</?p>')
 unhr = re.compile('<hr>')
-unesq_right = re.compile('&gt;')
-unesq_left = re.compile('&lt;')
-validify_tags = re.compile(r'\\(&lt;|<|>)')
+unesq_right = re.compile('>')
+unesq_left = re.compile('<')
+validify_tags = re.compile(r'\\(<|<|>)')
 
 def nadekofy(string):
     return html.parser.unescape(
