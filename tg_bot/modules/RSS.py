@@ -133,7 +133,7 @@ class RSSFeed(metaclass=FeedSingleton):
         return hash(self.url)
 
 
-class RSS(Nadeko.NadekoAPI.plugins.GenericPlugin):
+class RSS(tg_bot.plugins.GenericPlugin):
     def __init__(self, updater):
         try:
             with open(path.join(datadir, 'rss.dat'), 'rb') as f:
