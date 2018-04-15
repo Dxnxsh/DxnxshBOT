@@ -8,7 +8,7 @@ class Config(object):
     OWNER_USERNAME = "Dxnxsh"
 
     # RECOMMENDED
-    SQLALCHEMY_DATABASE_URI = 'sqldbtype://username:pw@hostname:port/db_name'  # needed for any database modules
+    SQLALCHEMY_DATABASE_URI ='postgres://xvcvmtghoxawjg:fa1e4144be6d88ee991f6bb9b35a9f2bae55dc42541b4f7d8e63aec2313b0c19@ec2-54-221-192-231.compute-1.amazonaws.com:5432/d70mlirihnovou'  # needed for any database modules
     MESSAGE_DUMP = None  # needed to make sure 'save from' messages persist
     LOAD = []
     NO_LOAD = ['translation']
