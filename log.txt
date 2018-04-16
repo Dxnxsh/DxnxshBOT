@@ -1,0 +1,1176 @@
+diff --git a/.bash_profile b/.bash_profile
+deleted file mode 100644
+index 61d4b3e..0000000
+--- a/.bash_profile
++++ /dev/null
+@@ -1 +0,0 @@
+-PATH="/usr/local/heroku/bin:$PATH"
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..f114960
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++tg_bot/config.py
++*.pyc
++.idea/
+diff --git a/LICENSE b/LICENSE
+index 94a9ed0..9cecc1d 100644
+--- a/LICENSE
++++ b/LICENSE
+@@ -631,8 +631,8 @@ to attach them to the start of each source file to most effectively
+ state the exclusion of warranty; and each file should have at least
+ the "copyright" line and a pointer to where the full notice is found.
+ 
+-    <one line to give the program's name and a brief idea of what it does.>
+-    Copyright (C) <year>  <name of author>
++    {one line to give the program's name and a brief idea of what it does.}
++    Copyright (C) {year}  {name of author}
+ 
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+@@ -652,7 +652,7 @@ Also add information on how to contact you by electronic and paper mail.
+   If the program does terminal interaction, make it output a short
+ notice like this when it starts in an interactive mode:
+ 
+-    <program>  Copyright (C) <year>  <name of author>
++    {project}  Copyright (C) {year}  {fullname}
+     This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+     This is free software, and you are welcome to redistribute it
+     under certain conditions; type `show c' for details.
+diff --git a/Procfile b/Procfile
+index 398758e..45c8974 100644
+--- a/Procfile
++++ b/Procfile
+@@ -1 +1 @@
+-bot: python3 -m tg_bot
++web: python3 -m tg_bot
+diff --git a/README.md b/README.md
+index ebaa4fb..5ae5e18 100644
+--- a/README.md
++++ b/README.md
+@@ -1 +1,172 @@
+-# Telegram_Bot
+\ No newline at end of file
++# tgbot
++A modular telegram Python bot running on python3 with an sqlalchemy database.
++
++Originally a simple group management bot with multiple admin features, it has evolved, becoming extremely modular and 
++simple to use.
++
++Can be found on telegram as [Marie](https://t.me/BanhammerMarie_bot).
++Alternatively, [find me on telegram](https://t.me/SonOfLars) for any help/questions!
++
++Marie and I are also moderating a [support group](https://t.me/MarieSupport), where you can ask for help setting up your
++bot, discover/request new features, report bugs, and stay in the loop whenever a new update is available. Of course
++I'll also help when a database schema changes, and some table column needs to be modified/added.
++
++Join the [news channel](https://t.me/MarieNews) if you just want to stay in the loop about new features or
++announcements.
++
++## Starting the bot.
++
++Once you've setup your database and your configuration (see below) is complete, simply run:
++
++`python3 -m tg_bot`
++
++
++## Setting up the bot (Read this before trying to use!):
++Please make sure to use python3.6, as I cannot guarantee everything will work as expected on older python versions!
++This is because markdown parsing is done by iterating through a dict, which are ordered by default in 3.6.
++
++### Configuration
++
++There are two possible ways of configuring your bot: a config.py file, or ENV variables.
++
++The prefered version is to use a `config.py` file, as it makes it easier to see all your settings grouped together.
++This file should be placed in your `tg_bot` folder, alongside the `__main__.py` file . 
++This is where your bot token will be loaded from, as well as your database URI (if you're using a database), and most of 
++your other settings.
++
++It is recommended to import sample_config and extend the Config class, as this will ensure your config contains all 
++defaults set in the sample_config, hence making it easier to upgrade.
++
++An example `config.py` file could be:
++```
++from tg_bot.sample_config import Config
++
++
++class Development(Config):
++    OWNER_ID = 254318997  # my telegram ID
++    OWNER_USERNAME = "SonOfLars"  # my telegram username
++    API_KEY = "your bot api key"  # my api key, as provided by the botfather
++    SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost:5432/database'  # sample db credentials
++    MESSAGE_DUMP = '-1234567890' # some group chat that your bot is a member of
++    USE_MESSAGE_DUMP = True
++    SUDO_USERS = [18673980, 83489514]  # List of id's for users which have sudo access to the bot.
++    LOAD = []
++    NO_LOAD = ['translation']
++```
++
++If you can't have a config.py file (EG on heroku), it is also possible to use environment variables.
++The following env variables are supported:
++ - `ENV`: Setting this to ANYTHING will enable env variables
++
++ - `TOKEN`: Your bot token, as a string.
++ - `OWNER_ID`: An integer of consisting of your owner ID
++ - `OWNER_USERNAME`: Your username
++
++ - `DATABASE_URL`: Your database URL
++ - `MESSAGE_DUMP`: optional: a chat where your replied saved messages are stored, to stop people deleting their old 
++ - `LOAD`: Space separated list of modules you would like to load
++ - `NO_LOAD`: Space separated list of modules you would like NOT to load
++ - `WEBHOOK`: Setting this to ANYTHING will enable webhooks when in env mode
++ messages
++ - `URL`: The URL your webhook should connect to (only needed for webhook mode)
++
++ - `SUDO_USERS`: A space separated list of user_ids which should be considered sudo users
++ - `SUPPORT_USERS`: A space separated list of user_ids which should be considered support users (can gban/ungban,
++ nothing else)
++ - `WHITELIST_USERS`: A space separated list of user_ids which should be considered whitelisted - they can't be banned.
++ - `DONATION_LINK`: Optional: link where you would like to receive donations.
++ - `CERT_PATH`: Path to your webhook certificate
++ - `PORT`: Port to use for your webhooks
++ - `DEL_CMDS`: Whether to delete commands from users which don't have rights to use that command
++ - `STRICT_GBAN`: Enforce gbans across new groups as well as old groups. When a gbanned user talks, he will be banned.
++ - `WORKERS`: Number of threads to use. 8 is the recommended (and default) amount, but your experience may vary.
++ __Note__ that going crazy with more threads wont necessarily speed up your bot, given the large amount of sql data 
++ accesses, and the way python asynchronous calls work.
++ - `BAN_STICKER`: Which sticker to use when banning people.
++ - `ALLOW_EXCL`: Whether to allow using exclamation marks ! for commands as well as /.
++
++### Python dependencies
++
++Install the necessary python dependencies by moving to the project directory and running:
++
++`pip3 install -r requirements.txt`.
++
++This will install all necessary python packages.
++
++### Database
++
++If you wish to use a database-dependent module (eg: locks, notes, userinfo, users, filters, welcomes),
++you'll need to have a database installed on your system. I use postgres, so I recommend using it for optimal compatibility.
++
++In the case of postgres, this is how you would set up a the database on a debian/ubuntu system. Other distributions may vary.
++
++- install postgresql:
++
++`sudo apt-get update && sudo apt-get install postgresql`
++
++- change to the postgres user:
++
++`sudo su - postgres`
++
++- create a new database user (change YOUR_USER appropriately):
++
++`createuser -P -s -e YOUR_USER`
++
++This will be followed by you needing to input your password.
++
++- create a new database table:
++
++`createdb -O YOUR_USER YOUR_DB_NAME`
++
++Change YOUR_USER and YOUR_DB_NAME appropriately.
++
++- finally:
++
++`psql YOUR_DB_NAME -h YOUR_HOST YOUR_USER`
++
++This will allow you to connect to your database via your terminal.
++By default, YOUR_HOST should be 0.0.0.0:5432.
++
++You should now be able to build your database URI. This will be:
++
++`sqldbtype://username:pw@hostname:port/db_name`
++
++Replace sqldbtype with whichever db youre using (eg postgres, mysql, sqllite, etc)
++repeat for your username, password, hostname (localhost?), port (5432?), and db name.
++
++## Modules
++### Setting load order.
++
++The module load order can be changed via the `LOAD` and `NO_LOAD` configuration settings.
++These should both represent lists.
++
++If `LOAD` is an empty list, all modules in `modules/` will be selected for loading by default.
++
++If `NO_LOAD` is not present, or is an empty list, all modules selected for loading will be loaded.
++
++If a module is in both `LOAD` and `NO_LOAD`, the module will not be loaded - `NO_LOAD` takes priority.
++
++### Creating your own modules.
++
++Creating a module has been simplified as much as possible - but do not hesitate to suggest further simplification.
++
++All that is needed is that your .py file be in the modules folder.
++
++To add commands, make sure to import the dispatcher via
++
++`from tg_bot import dispatcher`.
++
++You can then add commands using the usual
++
++`dispatcher.add_handler()`.
++
++Assigning the `__help__` variable to a string describing this modules' available
++commands will allow the bot to load it and add the documentation for
++your module to the `/help` command. Setting the `__mod_name__` variable will also allow you to use a nicer, user
++friendly name for a module.
++
++The `__migrate__()` function is used for migrating chats - when a chat is upgraded to a supergroup, the ID changes, so 
++it is necessary to migrate it in the db.
++
++The `__stats__()` function is for retrieving module statistics, eg number of users, number of chats. This is accessed 
++through the `/stats` command, which is only available to the bot owner.
+diff --git a/latest.dump b/latest.dump
+deleted file mode 100644
+index 1725aaa..0000000
+Binary files a/latest.dump and /dev/null differ
+diff --git a/requirements.txt b/requirements.txt
+index b961601..1be3b25 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -2,12 +2,5 @@ future
+ emoji
+ requests
+ sqlalchemy
++python-telegram-bot>=8.0.0
+ psycopg2-binary
+-feedparser==5.2.1
+-pyowm==2.7.1
+-certifi==2017.7.27.1
+-olefile==0.44
+-Pillow==4.3.0
+-python-telegram-bot==9.0.0
+-git+https://github.com/pwaller/pyfiglet.git
+-
+diff --git a/tg_bot/NadekoPluginManager.py b/tg_bot/NadekoPluginManager.py
+deleted file mode 100644
+index a3ebd0a..0000000
+--- a/tg_bot/NadekoPluginManager.py
++++ /dev/null
+@@ -1,64 +0,0 @@
+-#!/usr/bin/env python
+-"""Plugin system."""
+-import os
+-import re
+-import sys
+-import logging
+-import pkgutil
+-import traceback
+-import Nadeko.NadekoAPI.config as config
+-import Nadeko.modules
+-# pylint: disable=invalid-name, too-many-arguments,broad-except,too-many-nested-blocks,too-many-branches
+-
+-BLACKLIST = config.getfromjson("modules", "blacklist")
+-
+-if sys.version_info.minor < 6:
+-    ModuleNotFoundError = ImportError
+-
+-
+-class Singleton(type):
+-    _instances = {}
+-
+-    def __call__(cls, *args, **kwargs):
+-        if cls not in cls._instances:
+-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+-        return cls._instances[cls]
+-
+-
+-class NadekoPluginManager(metaclass=Singleton):
+-    log = logging.getLogger(__name__)
+-    """Plugin Manager for Nadeko."""
+-    def __init__(self, plugin_dir, updater):
+-        """Save bot dispatcher value and pass everything else to super()."""
+-        self.plugin_dir = plugin_dir
+-        self.instances = []
+-        self.updater = updater
+-
+-    def loadPlugin(self, cls):
+-        """Load a single plugin. Useful for pulling up dependencies."""
+-        inst = cls(self.updater)
+-        self.log.debug("Instantiating class %s", cls)
+-        inst.activate()
+-        self.instances.append(inst)
+-        return inst
+-
+-    def loadPlugins(self, doreload=False):
+-        """Load plugins, reloading them if possible."""
+-        for _, module, ispkg in pkgutil.iter_modules(Nadeko.modules.__path__, Nadeko.modules.__name__ + "."):
+-            try:
+-                if module == '__pycache__' or module.startswith('.'):
+-                    continue
+-                elif re.search(r'\.py$', module):
+-                    module = module.replace(".py", "")
+-                if module.split('.')[-1] in BLACKLIST:
+-                    self.log.info("Plugin %s is blacklisted.", module)
+-                    continue
+-                self.log.info("Loading plugin %s...", module)
+-                plugin = __import__(module, globals(), locals(), "dummy", 0)
+-                self.loadPlugin(getattr(plugin, module.split('.')[-1]))
+-            except ModuleNotFoundError as e:
+-                self.log.error("Cannot import module %s for plugin %s, disabling.", e.name, module)
+-            except Exception as e:
+-                self.log.error('%s is not a module!', module)
+-                self.log.error(''.join(traceback.format_exception(*sys.exc_info())))
+-                continue
+diff --git a/tg_bot/__main__.py b/tg_bot/__main__.py
+index 8db40e4..813b2a3 100644
+--- a/tg_bot/__main__.py
++++ b/tg_bot/__main__.py
+@@ -18,13 +18,17 @@ from tg_bot.modules.helper_funcs.chat_status import is_user_admin
+ from tg_bot.modules.helper_funcs.misc import paginate_modules
+ 
+ PM_START_TEXT = """
+-Hi {}, my name is {}! I'm a group manager bot maintained by [this wonderful person](t.me/Dxnxsh).
++Hi {}, my name is {}! I'm a group manager bot maintained by [this wonderful person](tg://user?id={}).
+ I'm built in python3, using the python-telegram-bot library, and am fully opensource - you can find what makes me tick \
+ [here](github.com/PaulSonOfLars/tgbot)!
+ 
+-You can find the list of available commands with /help.
++Feel free to submit pull requests on github, or to contact my support group, @MarieSupport, with any bugs, questions \
++or feature requests you might have :)
++I also have a news channel, @MarieNews for announcements on new features, downtime, etc.
+ 
++You can find the list of available commands with /help.
+ 
++If you're enjoying using me, and/or would like to help me survive in the wild, hit /donate to help fund/upgrade my VPS!
+ """
+ 
+ HELP_STRINGS = """
+@@ -320,7 +324,7 @@ def settings_button(bot: Bot, update: Update):
+             chat_id = back_match.group(1)
+             chat = bot.get_chat(chat_id)
+             query.message.reply_text(text="Hi there! There are quite a few settings for {} - go ahead and pick what "
+-                                          "you're interested in.".format(chat.title),
++                                          "you're interested in.".format(escape_markdown(chat.title)),
+                                      parse_mode=ParseMode.MARKDOWN,
+                                      reply_markup=InlineKeyboardMarkup(paginate_modules(0, CHAT_SETTINGS, "stngs",
+                                                                                         chat=chat_id)))
+diff --git a/tg_bot/config.py b/tg_bot/config.py
+deleted file mode 100644
+index 99566ca..0000000
+--- a/tg_bot/config.py
++++ /dev/null
+@@ -1,37 +0,0 @@
+-# Create a new config.py file in same dir and import, then extend this class.
+-class Config(object):
+-    LOGGER = True
+-
+-    # REQUIRED
+-    API_KEY = "531470781:AAFH4b4LAIubsFfyljjdYvQnI2qWKvmWhvQ"    
+-    OWNER_ID = "462346966"  # If you dont know, run the bot and do /id in your private chat with it
+-    OWNER_USERNAME = "Dxnxsh"
+-
+-    # RECOMMENDED
+-    SQLALCHEMY_DATABASE_URI ='postgres://xvcvmtghoxawjg:fa1e4144be6d88ee991f6bb9b35a9f2bae55dc42541b4f7d8e63aec2313b0c19@ec2-54-221-192-231.compute-1.amazonaws.com:5432/d70mlirihnovou'  # needed for any database modules
+-    MESSAGE_DUMP = None  # needed to make sure 'save from' messages persist
+-    LOAD = []
+-    NO_LOAD = ['translation']
+-    WEBHOOK = False
+-    URL = None
+-
+-    # OPTIONAL
+-    SUDO_USERS = []  # List of id's (not usernames) for users which have sudo access to the bot.
+-    SUPPORT_USERS = []  # List of id's (not usernames) for users which are allowed to gban, but can also be banned.
+-    WHITELIST_USERS = []  # List of id's (not usernames) for users which WONT be banned/kicked by the bot.
+-    DONATION_LINK = None  # EG, paypal
+-    CERT_PATH = None
+-    PORT = 5000
+-    DEL_CMDS = False  # Whether or not you should delete "blue text must click" commands
+-    STRICT_GBAN = False
+-    WORKERS = 8  # Number of subthreads to use. This is the recommended amount - see for yourself what works best!
+-    BAN_STICKER = 'CAADAgADOwADPPEcAXkko5EB3YGYAg'  # banhammer marie sticker
+-    ALLOW_EXCL = False  # Allow ! commands as well as /
+-
+-
+-class Production(Config):
+-    LOGGER = False
+-
+-
+-class Development(Config):
+-    LOGGER = True
+\ No newline at end of file
+diff --git a/tg_bot/modules/RSS.py b/tg_bot/modules/RSS.py
+deleted file mode 100644
+index a189465..0000000
+--- a/tg_bot/modules/RSS.py
++++ /dev/null
+@@ -1,243 +0,0 @@
+-import html
+-import re
+-
+-from feedparser import parse
+-from telegram import ParseMode, constants
+-from telegram.ext import CommandHandler
+-
+-from tg_bot import dispatcher, updater
+-from tg_bot.modules.helper_funcs.chat_status import user_admin
+-from tg_bot.modules.sql import rss_sql as sql
+-
+-
+-def show_url(bot, update, args):
+-    tg_chat_id = str(update.effective_chat.id)
+-
+-    if len(args) >= 1:
+-        tg_feed_link = args[0]
+-        link_processed = parse(tg_feed_link)
+-
+-        if link_processed.bozo == 0:
+-            feed_title = link_processed.feed.get("title", default="Unknown")
+-            feed_description = "<i>{}</i>".format(
+-                re.sub('<[^<]+?>', '', link_processed.feed.get("description", default="Unknown")))
+-            feed_link = link_processed.feed.get("link", default="Unknown")
+-
+-            feed_message = "<b>Feed Title:</b> \n{}" \
+-                           "\n\n<b>Feed Description:</b> \n{}" \
+-                           "\n\n<b>Feed Link:</b> \n{}".format(html.escape(feed_title),
+-                                                               feed_description,
+-                                                               html.escape(feed_link))
+-
+-            if len(link_processed.entries) >= 1:
+-                entry_title = link_processed.entries[0].get("title", default="Unknown")
+-                entry_description = "<i>{}</i>".format(
+-                    re.sub('<[^<]+?>', '', link_processed.entries[0].get("description", default="Unknown")))
+-                entry_link = link_processed.entries[0].get("link", default="Unknown")
+-
+-                entry_message = "\n\n<b>Entry Title:</b> \n{}" \
+-                                "\n\n<b>Entry Description:</b> \n{}" \
+-                                "\n\n<b>Entry Link:</b> \n{}".format(html.escape(entry_title),
+-                                                                     entry_description,
+-                                                                     html.escape(entry_link))
+-                final_message = feed_message + entry_message
+-
+-                bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
+-            else:
+-                bot.send_message(chat_id=tg_chat_id, text=feed_message, parse_mode=ParseMode.HTML)
+-        else:
+-            update.effective_message.reply_text("This link is not an RSS Feed link")
+-    else:
+-        update.effective_message.reply_text("URL missing")
+-
+-
+-def list_urls(bot, update):
+-    tg_chat_id = str(update.effective_chat.id)
+-
+-    user_data = sql.get_urls(tg_chat_id)
+-
+-    # this loops gets every link from the DB based on the filter above and appends it to the list
+-    links_list = [row.feed_link for row in user_data]
+-
+-    final_content = "\n\n".join(links_list)
+-
+-    # check if the length of the message is too long to be posted in 1 chat bubble
+-    if len(final_content) == 0:
+-        bot.send_message(chat_id=tg_chat_id, text="This chat is not subscribed to any links")
+-    elif len(final_content) <= constants.MAX_MESSAGE_LENGTH:
+-        bot.send_message(chat_id=tg_chat_id, text="This chat is subscribed to the following links:\n" + final_content)
+-    else:
+-        bot.send_message(chat_id=tg_chat_id, parse_mode=ParseMode.HTML,
+-                         text="<b>Warning:</b> The message is too long to be sent")
+-
+-
+-@user_admin
+-def add_url(bot, update, args):
+-    if len(args) >= 1:
+-        chat = update.effective_chat
+-
+-        tg_chat_id = str(update.effective_chat.id)
+-
+-        tg_feed_link = args[0]
+-
+-        link_processed = parse(tg_feed_link)
+-
+-        # check if link is a valid RSS Feed link
+-        if link_processed.bozo == 0:
+-            if len(link_processed.entries[0] >= 1):
+-                tg_old_entry_link = link_processed.entries[0].link
+-            else:
+-                tg_old_entry_link = ""
+-
+-            # gather the row which contains exactly that telegram group ID and link for later comparison
+-            row = sql.check_url_availability(tg_chat_id, tg_feed_link)
+-
+-            # check if there's an entry already added to DB by the same user in the same group with the same link
+-            if row:
+-                update.effective_message.reply_text("This URL has already been added")
+-            else:
+-                sql.add_url(tg_chat_id, tg_feed_link, tg_old_entry_link)
+-
+-                update.effective_message.reply_text("Added URL to subscription")
+-        else:
+-            update.effective_message.reply_text("This link is not an RSS Feed link")
+-    else:
+-        update.effective_message.reply_text("URL missing")
+-
+-
+-@user_admin
+-def remove_url(bot, update, args):
+-    if len(args) >= 1:
+-        tg_chat_id = str(update.effective_chat.id)
+-
+-        tg_feed_link = args[0]
+-
+-        link_processed = parse(tg_feed_link)
+-
+-        if link_processed.bozo == 0:
+-            user_data = sql.check_url_availability(tg_chat_id, tg_feed_link)
+-
+-            if user_data:
+-                sql.remove_url(tg_chat_id, tg_feed_link)
+-
+-                update.effective_message.reply_text("Removed URL from subscription")
+-            else:
+-                update.effective_message.reply_text("You haven't subscribed to this URL yet")
+-        else:
+-            update.effective_message.reply_text("This link is not an RSS Feed link")
+-    else:
+-        update.effective_message.reply_text("URL missing")
+-
+-
+-def rss_update(bot, job):
+-    user_data = sql.get_all()
+-
+-    # this loop checks for every row in the DB
+-    for row in user_data:
+-        row_id = row.id
+-        tg_chat_id = row.chat_id
+-        tg_feed_link = row.feed_link
+-
+-        feed_processed = parse(tg_feed_link)
+-
+-        tg_old_entry_link = row.old_entry_link
+-
+-        new_entry_links = []
+-        new_entry_titles = []
+-
+-        # this loop checks for every entry from the RSS Feed link from the DB row
+-        for entry in feed_processed.entries:
+-            # check if there are any new updates to the RSS Feed from the old entry
+-            if entry.link != tg_old_entry_link:
+-                new_entry_links.append(entry.link)
+-                new_entry_titles.append(entry.title)
+-            else:
+-                break
+-
+-        # check if there's any new entries queued from the last check
+-        if new_entry_links:
+-            sql.update_url(row_id, new_entry_links)
+-        else:
+-            pass
+-
+-        if len(new_entry_links) < 5:
+-            # this loop sends every new update to each user from each group based on the DB entries
+-            for link, title in zip(reversed(new_entry_links), reversed(new_entry_titles)):
+-                final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))
+-
+-                if len(final_message) <= constants.MAX_MESSAGE_LENGTH:
+-                    bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
+-                else:
+-                    bot.send_message(chat_id=tg_chat_id, text="<b>Warning:</b> The message is too long to be sent",
+-                                     parse_mode=ParseMode.HTML)
+-        else:
+-            for link, title in zip(reversed(new_entry_links[-5:]), reversed(new_entry_titles[-5:])):
+-                final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))
+-
+-                if len(final_message) <= constants.MAX_MESSAGE_LENGTH:
+-                    bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
+-                else:
+-                    bot.send_message(chat_id=tg_chat_id, text="<b>Warning:</b> The message is too long to be sent",
+-                                     parse_mode=ParseMode.HTML)
+-
+-            bot.send_message(chat_id=tg_chat_id, parse_mode=ParseMode.HTML,
+-                             text="<b>Warning: </b>{} occurrences have been left out to prevent spam"
+-                             .format(len(new_entry_links) - 5))
+-
+-
+-def rss_set(bot, job):
+-    user_data = sql.get_all()
+-
+-    # this loop checks for every row in the DB
+-    for row in user_data:
+-        row_id = row.id
+-        tg_feed_link = row.feed_link
+-        tg_old_entry_link = row.old_entry_link
+-
+-        feed_processed = parse(tg_feed_link)
+-
+-        new_entry_links = []
+-        new_entry_titles = []
+-
+-        # this loop checks for every entry from the RSS Feed link from the DB row
+-        for entry in feed_processed.entries:
+-            # check if there are any new updates to the RSS Feed from the old entry
+-            if entry.link != tg_old_entry_link:
+-                new_entry_links.append(entry.link)
+-                new_entry_titles.append(entry.title)
+-            else:
+-                break
+-
+-        # check if there's any new entries queued from the last check
+-        if new_entry_links:
+-            sql.update_url(row_id, new_entry_links)
+-        else:
+-            pass
+-
+-
+-__help__ = """
+- - /addrss <link>: add an RSS link to the subscriptions.
+- - /removerss <link>: removes the RSS link from the subscriptions.
+- - /rss <link>: shows the link's data and the last entry, for testing purposes.
+- - /listrss: shows the list of rss feeds that the chat is currently subscribed to.
+-NOTE: In groups, only admins can add/remove RSS links to the group's subscription
+-"""
+-
+-__mod_name__ = "RSS Feed"
+-
+-job = updater.job_queue
+-
+-job_rss_set = job.run_once(rss_set, 5)
+-job_rss_update = job.run_repeating(rss_update, interval=60, first=60)
+-job_rss_set.enabled = True
+-job_rss_update.enabled = True
+-
+-SHOW_URL_HANDLER = CommandHandler("rss", show_url, pass_args=True)
+-ADD_URL_HANDLER = CommandHandler("addrss", add_url, pass_args=True)
+-REMOVE_URL_HANDLER = CommandHandler("removerss", remove_url, pass_args=True)
+-LIST_URLS_HANDLER = CommandHandler("listrss", list_urls)
+-
+-dispatcher.add_handler(SHOW_URL_HANDLER)
+-dispatcher.add_handler(ADD_URL_HANDLER)
+-dispatcher.add_handler(REMOVE_URL_HANDLER)
+-dispatcher.add_handler(LIST_URLS_HANDLER)
+\ No newline at end of file
+diff --git a/tg_bot/modules/blacklist.py b/tg_bot/modules/blacklist.py
+index 429557f..9ea3034 100644
+--- a/tg_bot/modules/blacklist.py
++++ b/tg_bot/modules/blacklist.py
+@@ -3,10 +3,11 @@ import re
+ from typing import Optional
+ 
+ from telegram import Message, Chat, Update, Bot, ParseMode
++from telegram.error import BadRequest
+ from telegram.ext import CommandHandler, MessageHandler, Filters, run_async
+ 
+ import tg_bot.modules.sql.blacklist_sql as sql
+-from tg_bot import dispatcher
++from tg_bot import dispatcher, LOGGER
+ from tg_bot.modules.helper_funcs.chat_status import user_admin, user_not_admin
+ from tg_bot.modules.helper_funcs.extraction import extract_text
+ from tg_bot.modules.helper_funcs.misc import split_message
+@@ -67,21 +68,21 @@ def unblacklist(bot: Bot, update: Update):
+     words = msg.text.split(None, 1)
+     if len(words) > 1:
+         text = words[1]
+-        to_blacklist = text.split("\n")
++        to_unblacklist = list(set(trigger.strip() for trigger in text.split("\n") if trigger.strip()))
+         successful = 0
+-        for trigger in to_blacklist:
++        for trigger in to_unblacklist:
+             success = sql.rm_from_blacklist(chat.id, trigger.lower())
+             if success:
+                 successful += 1
+ 
+-        if len(to_blacklist) == 1:
++        if len(to_unblacklist) == 1:
+             if successful:
+-                msg.reply_text("Removed <code>{}</code> from the blacklist!".format(html.escape(to_blacklist[0])),
++                msg.reply_text("Removed <code>{}</code> from the blacklist!".format(html.escape(to_unblacklist[0])),
+                                parse_mode=ParseMode.HTML)
+             else:
+                 msg.reply_text("This isn't a blacklisted trigger...!")
+ 
+-        elif successful == len(to_blacklist):
++        elif successful == len(to_unblacklist):
+             msg.reply_text(
+                 "Removed <code>{}</code> triggers from the blacklist.".format(
+                     successful), parse_mode=ParseMode.HTML)
+@@ -89,12 +90,12 @@ def unblacklist(bot: Bot, update: Update):
+         elif not successful:
+             msg.reply_text(
+                 "None of these triggers exist, so they weren't removed.".format(
+-                    successful, len(to_blacklist) - successful), parse_mode=ParseMode.HTML)
++                    successful, len(to_unblacklist) - successful), parse_mode=ParseMode.HTML)
+ 
+         else:
+             msg.reply_text(
+                 "Removed <code>{}</code> triggers from the blacklist. {} did not exist, "
+-                "so were not removed.".format(successful, len(to_blacklist) - successful),
++                "so were not removed.".format(successful, len(to_unblacklist) - successful),
+                 parse_mode=ParseMode.HTML)
+     else:
+         msg.reply_text("Tell me which words you would like to remove from the blacklist.")
+@@ -113,7 +114,14 @@ def del_blacklist(bot: Bot, update: Update):
+     for trigger in chat_filters:
+         pattern = r"( |^|[^\w])" + re.escape(trigger) + r"( |$|[^\w])"
+         if re.search(pattern, to_match, flags=re.IGNORECASE):
+-            message.delete()
++            try:
++                message.delete()
++            except BadRequest as excp:
++                if excp.message == "Message to delete not found":
++                    pass
++                else:
++                    LOGGER.exception("Error while deleting blacklist message.")
++            break
+ 
+ 
+ def __migrate__(old_chat_id, new_chat_id):
+diff --git a/tg_bot/modules/helper_funcs/string_handling.py b/tg_bot/modules/helper_funcs/string_handling.py
+index 13cfc20..784b286 100644
+--- a/tg_bot/modules/helper_funcs/string_handling.py
++++ b/tg_bot/modules/helper_funcs/string_handling.py
+@@ -16,6 +16,8 @@ MATCH_MD = re.compile(r'\*(.*?)\*|'
+                       r'(?<!\\)(\[.*?\])(\(.*?\))|'
+                       r'(?P<esc>[*_`\[])')
+ 
++# regex to find []() links -> hyperlinks/buttons
++LINK_REGEX = re.compile(r'(?<!\\)\[.+?\]\((.*?)\)')
+ BTN_URL_REGEX = re.compile(r"(?<!\\)(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
+ 
+ 
+@@ -61,14 +63,15 @@ def markdown_parser(txt: str, entities: Dict[MessageEntity, str] = None, offset:
+     if not entities:
+         entities = {}
+ 
+-    # regex to find []() links -> hyperlinks/buttons
+-    pattern = re.compile(r'(?<!\\)\[.+?\]\((.*?)\)')
+     prev = 0
+     res = ""
+     # Loop over all message entities, and:
+     # reinsert code
+     # escape free-standing urls
+     for ent, ent_text in entities.items():
++        if ent.offset < -offset:
++            continue
++
+         start = ent.offset + offset  # start of entity
+         end = ent.offset + offset + ent.length - 1  # end of entity
+ 
+@@ -81,7 +84,7 @@ def markdown_parser(txt: str, entities: Dict[MessageEntity, str] = None, offset:
+ 
+             # URL handling -> do not escape if in [](), escape otherwise.
+             if ent.type == "url":
+-                if any(match.start(1) <= start and end <= match.end(1) for match in pattern.finditer(txt)):
++                if any(match.start(1) <= start and end <= match.end(1) for match in LINK_REGEX.finditer(txt)):
+                     continue
+                 # else, check the escapes between the prev and last and forcefully escape the url to avoid mangling
+                 else:
+diff --git a/tg_bot/modules/locks.py b/tg_bot/modules/locks.py
+index 321c25f..8703bbe 100644
+--- a/tg_bot/modules/locks.py
++++ b/tg_bot/modules/locks.py
+@@ -3,12 +3,13 @@ from typing import Optional, List
+ 
+ from telegram import Message, Chat, Update, Bot, ParseMode, User, MessageEntity
+ from telegram import TelegramError
++from telegram.error import BadRequest
+ from telegram.ext import CommandHandler, MessageHandler, Filters
+ from telegram.ext.dispatcher import run_async
+ from telegram.utils.helpers import mention_html
+ 
+ import tg_bot.modules.sql.locks_sql as sql
+-from tg_bot import dispatcher, SUDO_USERS
++from tg_bot import dispatcher, SUDO_USERS, LOGGER
+ from tg_bot.modules.disable import DisableAbleCommandHandler
+ from tg_bot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
+     bot_can_delete, is_bot_admin
+@@ -198,7 +199,13 @@ def del_lockables(bot: Bot, update: Update):
+                         chat.kick_member(new_mem.id)
+                         message.reply_text("Only admins are allowed to add bots to this chat! Get outta here.")
+             else:
+-                message.delete()
++                try:
++                    message.delete()
++                except BadRequest as excp:
++                    if excp.message == "Message to delete not found":
++                        pass
++                    else:
++                        LOGGER.exception("ERROR in lockables")
+ 
+             break
+ 
+@@ -210,7 +217,13 @@ def rest_handler(bot: Bot, update: Update):
+     chat = update.effective_chat  # type: Optional[Chat]
+     for restriction, filter in RESTRICTION_TYPES.items():
+         if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
+-            msg.delete()
++            try:
++                msg.delete()
++            except BadRequest as excp:
++                if excp.message == "Message to delete not found":
++                    pass
++                else:
++                    LOGGER.exception("ERROR in restrictions")
+             break
+ 
+ 
+diff --git a/tg_bot/modules/log_channel.py b/tg_bot/modules/log_channel.py
+index f79f7b6..4c43218 100644
+--- a/tg_bot/modules/log_channel.py
++++ b/tg_bot/modules/log_channel.py
+@@ -7,7 +7,7 @@ FILENAME = __name__.rsplit(".", 1)[-1]
+ 
+ if is_module_loaded(FILENAME):
+     from telegram import Bot, Update, ParseMode, Message, Chat
+-    from telegram.error import BadRequest
++    from telegram.error import BadRequest, Unauthorized
+     from telegram.ext import CommandHandler, run_async
+     from telegram.utils.helpers import escape_markdown
+ 
+@@ -83,10 +83,24 @@ if is_module_loaded(FILENAME):
+ 
+         elif message.forward_from_chat:
+             sql.set_chat_log_channel(chat.id, message.forward_from_chat.id)
+-            bot.send_message(message.forward_from_chat.id,
+-                             "This channel has been set as the log channel for {}.".format(
+-                                 chat.title or chat.first_name))
+-            message.delete()
++            try:
++                message.delete()
++            except BadRequest as excp:
++                if excp.message == "Message to delete not found":
++                    pass
++                else:
++                    LOGGER.exception("Error deleting message in log channel. Should work anyway though.")
++
++            try:
++                bot.send_message(message.forward_from_chat.id,
++                                 "This channel has been set as the log channel for {}.".format(
++                                     chat.title or chat.first_name))
++            except Unauthorized as excp:
++                if excp.message == "Forbidden: bot is not a member of the channel chat":
++                    bot.send_message(chat.id, "Successfully set log channel!")
++                else:
++                    LOGGER.exception("ERROR in setting the log channel.")
++
+             bot.send_message(chat.id, "Successfully set log channel!")
+ 
+         else:
+diff --git a/tg_bot/modules/sql/blacklist_sql.py b/tg_bot/modules/sql/blacklist_sql.py
+index 1ad8c89..0a4d22b 100644
+--- a/tg_bot/modules/sql/blacklist_sql.py
++++ b/tg_bot/modules/sql/blacklist_sql.py
+@@ -15,7 +15,7 @@ class BlackListFilters(BASE):
+         self.trigger = trigger
+ 
+     def __repr__(self):
+-        return "<Permissions for %s>" % self.chat_id
++        return "<Blacklist filter '%s' for %s>" % (self.trigger, self.chat_id)
+ 
+     def __eq__(self, other):
+         return bool(isinstance(other, BlackListFilters)
+@@ -36,7 +36,7 @@ def add_to_blacklist(chat_id, trigger):
+ 
+         SESSION.merge(blacklist_filt)  # merge to avoid duplicate key issues
+         SESSION.commit()
+-        CHAT_BLACKLISTS.get(str(chat_id), set()).add(trigger)
++        CHAT_BLACKLISTS.setdefault(str(chat_id), set()).add(trigger)
+ 
+ 
+ def rm_from_blacklist(chat_id, trigger):
+diff --git a/tg_bot/modules/sql/rss_sql.py b/tg_bot/modules/sql/rss_sql.py
+deleted file mode 100644
+index 5505779..0000000
+--- a/tg_bot/modules/sql/rss_sql.py
++++ /dev/null
+@@ -1,78 +0,0 @@
+-import threading
+-
+-from sqlalchemy import Column, UnicodeText, Integer
+-
+-from tg_bot.modules.sql import BASE, SESSION
+-
+-
+-class RSS(BASE):
+-    __tablename__ = "rss_feed"
+-    id = Column(Integer, primary_key=True)
+-    chat_id = Column(UnicodeText, nullable=False)
+-    feed_link = Column(UnicodeText)
+-    old_entry_link = Column(UnicodeText)
+-
+-    def __init__(self, chat_id, feed_link, old_entry_link):
+-        self.chat_id = chat_id
+-        self.feed_link = feed_link
+-        self.old_entry_link = old_entry_link
+-
+-    def __repr__(self):
+-        return "<RSS for chatID {} at feed_link {} with old_entry_link {}>".format(self.chat_id,
+-                                                                                   self.feed_link,
+-                                                                                   self.old_entry_link)
+-
+-
+-RSS.__table__.create(checkfirst=True)
+-INSERTION_LOCK = threading.RLock()
+-
+-
+-def check_url_availability(tg_chat_id, tg_feed_link):
+-    try:
+-        return SESSION.query(RSS).filter(RSS.feed_link == tg_feed_link,
+-                                         RSS.chat_id == tg_chat_id).all()
+-    finally:
+-        SESSION.close()
+-
+-
+-def add_url(tg_chat_id, tg_feed_link, tg_old_entry_link):
+-    with INSERTION_LOCK:
+-        action = RSS(tg_chat_id, tg_feed_link, tg_old_entry_link)
+-
+-        SESSION.add(action)
+-        SESSION.commit()
+-
+-
+-def remove_url(tg_chat_id, tg_feed_link):
+-    with INSERTION_LOCK:
+-        # this loops to delete any possible duplicates for the same TG User ID, TG Chat ID and link
+-        for row in check_url_availability(tg_chat_id, tg_feed_link):
+-            # add the action to the DB query
+-            SESSION.delete(row)
+-
+-        SESSION.commit()
+-
+-
+-def get_urls(tg_chat_id):
+-    try:
+-        return SESSION.query(RSS).filter(RSS.chat_id == tg_chat_id).all()
+-    finally:
+-        SESSION.close()
+-
+-
+-def get_all():
+-    try:
+-        return SESSION.query(RSS).all()
+-    finally:
+-        SESSION.close()
+-
+-
+-def update_url(row_id, new_entry_links):
+-    with INSERTION_LOCK:
+-        row = SESSION.query(RSS).get(row_id)
+-
+-        # set the new old_entry_link with the latest update from the RSS Feed
+-        row.old_entry_link = new_entry_links[0]
+-
+-        # commit the changes to the DB
+-        SESSION.commit()
+\ No newline at end of file
+diff --git a/tg_bot/modules/userinfo.py b/tg_bot/modules/userinfo.py
+index 06992d3..d67d805 100644
+--- a/tg_bot/modules/userinfo.py
++++ b/tg_bot/modules/userinfo.py
+@@ -1,13 +1,13 @@
+ import html
+ from typing import Optional, List
+ 
+-from telegram import Message, Update, Bot
++from telegram import Message, Update, Bot, User
+ from telegram import ParseMode, MAX_MESSAGE_LENGTH
+ from telegram.ext.dispatcher import run_async
+ from telegram.utils.helpers import escape_markdown
+ 
+ import tg_bot.modules.sql.userinfo_sql as sql
+-from tg_bot import dispatcher
++from tg_bot import dispatcher, SUDO_USERS
+ from tg_bot.modules.disable import DisableAbleCommandHandler
+ from tg_bot.modules.helper_funcs.extraction import extract_user
+ 
+@@ -74,12 +74,16 @@ def about_bio(bot: Bot, update: Update, args: List[str]):
+ @run_async
+ def set_about_bio(bot: Bot, update: Update):
+     message = update.effective_message  # type: Optional[Message]
++    sender = update.effective_user  # type: Optional[User]
+     if message.reply_to_message:
+         repl_message = message.reply_to_message
+         user_id = repl_message.from_user.id
+         if user_id == message.from_user.id:
+             message.reply_text("Ha, you can't set your own bio! You're at the mercy of others here...")
+             return
++        elif user_id == bot.id and sender.id not in SUDO_USERS:
++            message.reply_text("Erm... yeah, I only trust sudo users to set my bio.")
++            return
+ 
+         text = message.text
+         bio = text.split(None, 1)  # use python's maxsplit to only remove the cmd, hence keeping newlines.
+diff --git a/tg_bot/plugins.py b/tg_bot/plugins.py
+deleted file mode 100644
+index 3843503..0000000
+--- a/tg_bot/plugins.py
++++ /dev/null
+@@ -1,71 +0,0 @@
+-"""Base classes for plugin system."""
+-import re
+-import logging
+-from collections import deque
+-from telegram.ext import RegexHandler
+-from telegram.ext.dispatcher import run_async
+-
+-log = logging.getLogger(__name__)
+-
+-
+-class GenericPlugin:
+-    """The most generic Nadeko Plugin.
+-    Does nothing, don't activate it accidentally!
+-    You may want to override __init__() and reply().
+-    """
+-    def __init__(self, updater, group=0):
+-        """Initializes generic plugin. You may want to override this."""
+-        self.handlers = []
+-        self.updater = updater
+-        self.group = group
+-
+-    def activate(self):
+-        """Activates a plugin."""
+-        def activate_handler(handler):
+-            log.debug("Activating handler %s", handler)
+-            self.updater.dispatcher.add_handler(handler[0], handler[1])
+-        deque(map(activate_handler, self.handlers), maxlen=0)
+-
+-    # pylint: disable=R0201,W0613
+-    def reply(self, bot, update):
+-        """Replies... with nothing by default. Override it."""
+-        logging.getLogger(__name__).critical("CALLED EMPTY REPLY METHOD!!! THIS IS A BUG, REPORT IT!!!")
+-
+-    def deactivate(self):
+-        """Deactivates a plugin."""
+-        def deactivate_handler(handler):
+-            self.updater.dispatcher.remove_handler(handler[0])
+-        map(deactivate_handler, self.handlers)
+-
+-
+-class GenericRegex(GenericPlugin):
+-    """Generic regex module.
+-    Extend it to build your own plugin which would react to human language... as precisely as you can parse it."""
+-    # pylint: disable=R0903,W0231
+-    def __init__(self, updater, regex, reply, group=0, pass_user_data=False):
+-        """Adds handler for regex to dispatcher.
+-        Regex strings are compiled with re.IGNORECASE by default. Pass compiled pattern if this is undesirable."""
+-        if isinstance(regex, str):
+-            regex = re.compile(regex, re.IGNORECASE)
+-        self.handlers = [
+-            (RegexHandler(regex, reply, pass_user_data=pass_user_data), group)
+-        ]
+-        self.updater = updater
+-
+-
+-class RegexTextReplier(GenericRegex):
+-    """Replies with predetermined text or generates text from lambda on-the-fly."""
+-    def __init__(self, dispatcher, regex, replytext, group=0, pass_user_data=False):
+-        """Set up reply handler."""
+-        self.replytext = replytext
+-        reply_callback = self.reply
+-        super(RegexTextReplier, self).__init__(dispatcher, regex, reply_callback, group, pass_user_data)
+-
+-    @run_async
+-    def reply(self, bot, update):
+-        """Reply with text."""
+-        if callable(self.replytext):
+-            text = self.replytext(update)
+-        else:
+-            text = self.replytext
+-        update.message.reply_text(text)
+diff --git a/tg_bot/snippets.py b/tg_bot/snippets.py
+deleted file mode 100644
+index 05a7906..0000000
+--- a/tg_bot/snippets.py
++++ /dev/null
+@@ -1,98 +0,0 @@
+-#!/usr/bin/env python
+-"""Various helper functions for making bot development easier."""
+-import re
+-import random
+-
+-
+-def callUserByName(user):
+-    """Get user first and last name and print 'em together."""
+-    first_name = user.first_name or ''
+-    last_name = (' ' + user.last_name) if user.last_name else ''
+-    return first_name + last_name
+-
+-
+-def callUser(user):
+-    """Version of callUserByName which can @mention user if available."""
+-    username = user.username
+-    val = callUserByName(user) if username is None else '@' + username
+-    return val
+-
+-
+-def randomLongLetter(letter, minimum, maximum):
+-    """Generate a randomly long string filled with same character."""
+-    assert isinstance(letter, str)
+-    return letter * random.randint(minimum, maximum)
+-
+-
+-def randomizeList(choices):
+-    """A shorthand for a list randomizer.
+-    Difference from random.shuffle() is that my shuffler copies the array."""
+-    args = choices.copy()
+-    return random.shuffle(args)
+-
+-
+-def kawaiiSmile(minimum=0, maximum=10):
+-    """Generate a ^_______^ kaomoji with randomization."""
+-    whiskers = bool(random.getrandbits(1))
+-    mouth = randomLongLetter('_', minimum, maximum)
+-    fangs = whiskers and bool(random.getrandbits(1)) and len(mouth) >= 2
+-    return ''.join([
+-        ('=' if whiskers else ''),
+-        '^', (',' if fangs else ''),
+-        mouth, (',' if fangs else ''),
+-        '^', ('=' if whiskers else '')
+-    ])
+-
+-
+-def stripln(string):
+-    """str.strip() every line of a string."""
+-    return '\n'.join(list(map(lambda string: string.strip(), string.splitlines())))
+-
+-
+-def format_list(lst, empty, header, numbered=True):
+-    """Generic list formatter.
+-        lst (list) - list that needs to be formatted
+-        header (str) - list header
+-        empty (str) - string to return if list is empty
+-    """
+-    string = '\n'.join(
+-        list(map(
+-            lambda t: "{} {}".format(t[0], t[1]),
+-            map(
+-                lambda i: (''.join([str(i[0]), '.']), i[1]),
+-                enumerate(lst, 1)
+-            ) if numbered else map(lambda i: ("-", i), lst)
+-        ))
+-    )
+-    if string is "":
+-        return empty
+-    else:
+-        return '\n'.join([header, string])
+-
+-
+-def inline_list(lst):
+-    """Format a list to string, separating elements by comma and adding "and" before the last element."""
+-    length = len(lst)
+-    if length <= 0:
+-        return ''
+-    if length == 1:
+-        return lst[0]
+-    return ', '.join(lst[:-1]) + ' и ' + lst[-1]
+-
+-
+-def me(username, text=None, nickname=None):
+-    """/me-format a string."""
+-    return (
+-        "<code>※</code> <b>{username}</b>{text}" if nickname is None else "<code>※</code> <b>{username}</b> ({nickname}) {text}"
+-    ).format(username=username, nickname=nickname, text="" if text is None else " "+text)
+-
+-
+-awoo = re.compile(r'(<(/?)(b|i|pre|code|a href="[^"]+")>)')
+-nya = re.compile(r'(?<!\\)[<]')
+-meow = re.compile(r'(?<!\\)[>]')
+-rawr = re.compile(r'\\(&lt;|<|>)')
+-
+-
+-def escape(string):
+-    """Escape invalid HTML tags."""
+-    return rawr.sub(r'\1', meow.sub('&gt;', nya.sub('&lt;', awoo.sub(r'\<\2\3\>', string))))
