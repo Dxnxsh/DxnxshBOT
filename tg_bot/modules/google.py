@@ -15,5 +15,5 @@ def google(terms): # google <search term>
         title=title.translate({ord(k):None for k in u'<b>'})
         title=title.translate({ord(k):None for k in u'</b>'})
         returnval += title + ' ; ' + url + '\n'
-        
-return returnval.encode('utf-8')
+        return returnval.encode('utf-8')
+
