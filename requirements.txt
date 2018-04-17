@@ -4,4 +4,4 @@ sqlalchemy
 python-telegram-bot>=10.0.1
 psycopg2-binary
 feedparser==5.2.1
-
+google_api_python_client == 1.4.1
