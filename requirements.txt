@@ -8,6 +8,6 @@ pyowm==2.7.1
 certifi==2017.7.27.1
 olefile==0.44
 Pillow==4.3.0
-python-telegram-bot==9.0.0
+python-telegram-bot>=8.0.0
 git+https://github.com/pwaller/pyfiglet.git
 
