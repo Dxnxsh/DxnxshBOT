@@ -1,19 +1,7 @@
-future
 emoji
 requests
 sqlalchemy
+python-telegram-bot>=10.0.1
 psycopg2-binary
 feedparser==5.2.1
-pyowm==2.7.1
-certifi==2017.7.27.1
-olefile==0.44
-Pillow==4.3.0
-python-telegram-bot>=8.0.0
-git+https://github.com/pwaller/pyfiglet.git
-dj-database-url==0.3.0
-Django==1.8.1
-django-postgrespool==0.3.0
-gunicorn==19.3.0
-whitenoise==1.0.6
-
 
