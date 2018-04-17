@@ -1,7 +1,7 @@
 # .gitlab-ci.yml
 before_script:
-  - git config user.email "gitlab-ci-client@jbrains.ca"
-  - git config user.name "GitLab CI on behalf of J. B. Rainsberger"
+  - git config user.email "danishfarhan700@gmail.com"
+  - git config user.name "dxnxshfxrhxn"
 
 push_to_heroku:
   variables:
@@ -11,4 +11,4 @@ push_to_heroku:
   script:
     - git checkout -b $publication_branch_name
     - git commit --allow-empty -m "Publish to Heroku at $(date)"
-    - git push --force https://heroku:$HEROKU_API_KEY@git.heroku.com/arbitrary-jekyll-site.git $publication_branch_name:master
+    - git push --force https://git.heroku.com/dxnxshtestbot.git $publication_branch_name:master
