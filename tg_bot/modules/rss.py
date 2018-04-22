@@ -24,10 +24,10 @@ def show_url(bot, update, args):
             feed_link = link_processed.feed.get("link", default="Unknown")
 
             feed_message = "<b>Feed Title:</b> \n{}" \
-                           "\n\n<b>Feed Description:</b> \n{}".format(html.escape(feed_title),
-                                                               feed_description)
-
-
+                           "\n\n<b>Feed Description:</b> \n{}" \
+                           "\n\n<b>Feed Link:</b> \n{}".format(html.escape(feed_title),
+                                                               feed_description,
+                                                               html.escape(feed_link))
 
             if len(link_processed.entries) >= 1:
                 entry_title = link_processed.entries[0].get("title", default="Unknown")
