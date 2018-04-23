@@ -163,7 +163,7 @@ def rss_update(bot, job):
         if len(new_entry_links) < 5:
             # this loop sends every new update to each user from each group based on the DB entries
             for link, title in zip(reversed(new_entry_links), reversed(new_entry_titles)):
-                final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))
+                final_message = "<b>{}</b>\n\n".format(html.escape(title))
 
                 if len(final_message) <= constants.MAX_MESSAGE_LENGTH:
                     bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
@@ -172,7 +172,7 @@ def rss_update(bot, job):
                                      parse_mode=ParseMode.HTML)
         else:
             for link, title in zip(reversed(new_entry_links[-5:]), reversed(new_entry_titles[-5:])):
-                final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))
+                final_message = "<b>{}</b>\n\n".format(html.escape(title))
 
                 if len(final_message) <= constants.MAX_MESSAGE_LENGTH:
                     bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
