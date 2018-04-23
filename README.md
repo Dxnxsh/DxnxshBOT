@@ -1,4 +1,4 @@
-# tgbot
+# DxnxshBOT
 ORIGINALLY BASED ON MARIE(https://github.com/PaulSonOfLars/tgbot)
 
 A modular telegram Python bot running on python3 with an sqlalchemy database.
