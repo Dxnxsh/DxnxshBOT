@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Dict, List
 
 import emoji
@@ -62,6 +63,8 @@ def markdown_parser(txt: str, entities: Dict[MessageEntity, str] = None, offset:
     """
     if not entities:
         entities = {}
+    if not txt:
+        return ""
 
     prev = 0
     res = ""
@@ -211,3 +214,26 @@ def escape_chars(text: str, to_escape: List[str]) -> str:
             new_text += "\\"
         new_text += x
     return new_text
+
+
+def extract_time(message, time_val):
+    if any(time_val.endswith(unit) for unit in ('m', 'h', 'd')):
+        unit = time_val[-1]
+        time_num = time_val[:-1]  # type: str
+        if not time_num.isdigit():
+            message.reply_text("Invalid time amount specified.")
+            return ""
+
+        if unit == 'm':
+            bantime = int(time.time() + int(time_num) * 60)
+        elif unit == 'h':
+            bantime = int(time.time() + int(time_num) * 60 * 60)
+        elif unit == 'd':
+            bantime = int(time.time() + int(time_num) * 24 * 60 * 60)
+        else:
+            # how even...?
+            return ""
+        return bantime
+    else:
+        message.reply_text("Invalid time type specified. Expected m,h, or d, got: {}".format(time_val[-1]))
+        return ""
