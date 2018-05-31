@@ -1,14 +1,16 @@
 import html
 from typing import Optional, List
 
+import telegram.ext as tg
 from telegram import Message, Chat, Update, Bot, ParseMode, User, MessageEntity
 from telegram import TelegramError
+from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import tg_bot.modules.sql.locks_sql as sql
-from tg_bot import dispatcher, SUDO_USERS
+from tg_bot import dispatcher, SUDO_USERS, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
 from tg_bot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
     bot_can_delete, is_bot_admin
@@ -24,7 +26,7 @@ LOCK_TYPES = {'sticker': Filters.sticker,
               'contact': Filters.contact,
               'photo': Filters.photo,
               'gif': Filters.document & CustomFilters.mime_type("video/mp4"),
-              'url': Filters.entity(MessageEntity.URL),
+              'url': Filters.entity(MessageEntity.URL) | Filters.caption_entity(MessageEntity.URL),
               'bots': Filters.status_update.new_chat_members,
               'forward': Filters.forwarded,
               'game': Filters.game
@@ -33,7 +35,7 @@ LOCK_TYPES = {'sticker': Filters.sticker,
 GIF = Filters.document & CustomFilters.mime_type("video/mp4")
 OTHER = Filters.game | Filters.sticker | GIF
 MEDIA = Filters.audio | Filters.document | Filters.video | Filters.voice | Filters.photo
-MESSAGES = Filters.text | Filters.contact | Filters.location | Filters.venue | MEDIA | OTHER
+MESSAGES = Filters.text | Filters.contact | Filters.location | Filters.venue | Filters.command | MEDIA | OTHER
 PREVIEWS = Filters.entity("url")
 
 RESTRICTION_TYPES = {'messages': MESSAGES,
@@ -44,6 +46,19 @@ RESTRICTION_TYPES = {'messages': MESSAGES,
 
 PERM_GROUP = 1
 REST_GROUP = 2
+
+
+class CustomCommandHandler(tg.CommandHandler):
+    def __init__(self, command, callback, **kwargs):
+        super().__init__(command, callback, **kwargs)
+
+    def check_update(self, update):
+        return super().check_update(update) and not (
+                sql.is_restr_locked(update.effective_chat.id, 'messages') and not is_user_admin(update.effective_chat,
+                                                                                                update.effective_user.id))
+
+
+tg.CommandHandler = CustomCommandHandler
 
 
 # NOT ASYNC
@@ -158,11 +173,6 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
                     unrestr_members(bot, chat.id, members, True, True, True, True)
                 """
                 message.reply_text("Unlocked {} for everyone!".format(args[0]))
-                message.reply_text(
-                    "NOTE: due to a recent abuse of locking, {} will now only be deleting messages, and not "
-                    "restricting users via the tg api. This shouldn't affect all you users though, so dont worry! "
-                    "Just means that any restricted users should be manually unrestricted from the chat "
-                    "admin pannel.".format(bot.first_name))
 
                 return "<b>{}:</b>" \
                        "\n#UNLOCK" \
@@ -198,7 +208,13 @@ def del_lockables(bot: Bot, update: Update):
                         chat.kick_member(new_mem.id)
                         message.reply_text("Only admins are allowed to add bots to this chat! Get outta here.")
             else:
-                message.delete()
+                try:
+                    message.delete()
+                except BadRequest as excp:
+                    if excp.message == "Message to delete not found":
+                        pass
+                    else:
+                        LOGGER.exception("ERROR in lockables")
 
             break
 
@@ -210,7 +226,13 @@ def rest_handler(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     for restriction, filter in RESTRICTION_TYPES.items():
         if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
-            msg.delete()
+            try:
+                msg.delete()
+            except BadRequest as excp:
+                if excp.message == "Message to delete not found":
+                    pass
+                else:
+                    LOGGER.exception("ERROR in restrictions")
             break
 
 
