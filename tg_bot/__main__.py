@@ -86,8 +86,8 @@ for module_name in ALL_MODULES:
         STATS.append(imported_module)
         
     if hasattr(imported_module, "__gdpr__"):
- 	    GDPR.append(imported_module)
-
+ 	   GDPR.append(imported_module)
+ 	    
     if hasattr(imported_module, "__user_info__"):
         USER_INFO.append(imported_module)
 
