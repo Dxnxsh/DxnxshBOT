@@ -454,9 +454,9 @@ def main():
         updater.start_polling(timeout=15, read_latency=4)
 
     updater.idle()
-    
-    
-    CHATS_CNT = {}
+
+
+CHATS_CNT = {}
 CHATS_TIME = {}
  def process_update(self, update):
     # An error happened while polling
