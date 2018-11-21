@@ -458,7 +458,9 @@ def main():
 
 CHATS_CNT = {}
 CHATS_TIME = {}
- def process_update(self, update):
+
+
+def process_update(self, update):
     # An error happened while polling
     if isinstance(update, TelegramError):
         try:
