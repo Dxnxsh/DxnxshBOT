@@ -1,6 +1,6 @@
 import html
 import re
-from typing import Optional
+from typing import Optional, List
 
 from telegram import Message, Chat, Update, Bot, ParseMode
 from telegram.error import BadRequest
@@ -19,15 +19,20 @@ BASE_BLACKLIST_STRING = "Current <b>blacklisted</b> words:\n"
 
 
 @run_async
-def blacklist(bot: Bot, update: Update):
+def blacklist(bot: Bot, update: Update, args: List[str]):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
 
     all_blacklisted = sql.get_chat_blacklist(chat.id)
 
     filter_list = BASE_BLACKLIST_STRING
-    for trigger in all_blacklisted:
-        filter_list += " - <code>{}</code>\n".format(html.escape(trigger))
+
+    if len(args) > 0 and args[0].lower() == 'copy':
+        for trigger in all_blacklisted:
+            filter_list += "<code>{}</code>\n".format(html.escape(trigger))
+    else:
+        for trigger in all_blacklisted:
+            filter_list += " - <code>{}</code>\n".format(html.escape(trigger))
 
     split_text = split_message(filter_list)
     for text in split_text:
@@ -58,7 +63,7 @@ def add_blacklist(bot: Bot, update: Update):
                 "Added <code>{}</code> triggers to the blacklist.".format(len(to_blacklist)), parse_mode=ParseMode.HTML)
 
     else:
-        msg.reply_text("Tell me which words you would like to remove from the blacklist.")
+        msg.reply_text("Tell me which words you would like to add to the blacklist.")
 
 
 @run_async
@@ -157,11 +162,12 @@ multiple triggers at once.
  - /rmblacklist <triggers>: Same as above.
 """
 
-BLACKLIST_HANDLER = DisableAbleCommandHandler("blacklist", blacklist, filters=Filters.group, admin_ok=True)
+BLACKLIST_HANDLER = DisableAbleCommandHandler("blacklist", blacklist, filters=Filters.group, pass_args=True,
+                                              admin_ok=True)
 ADD_BLACKLIST_HANDLER = CommandHandler("addblacklist", add_blacklist, filters=Filters.group)
 UNBLACKLIST_HANDLER = CommandHandler(["unblacklist", "rmblacklist"], unblacklist, filters=Filters.group)
 BLACKLIST_DEL_HANDLER = MessageHandler(
-    (Filters.text | Filters.command | Filters.sticker | Filters.photo) & Filters.group, del_blacklist)
+    (Filters.text | Filters.command | Filters.sticker | Filters.photo) & Filters.group, del_blacklist, edited_updates=True)
 
 dispatcher.add_handler(BLACKLIST_HANDLER)
 dispatcher.add_handler(ADD_BLACKLIST_HANDLER)
